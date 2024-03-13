@@ -1,1 +1,1 @@
-Thank you to {Indently}(https://www.youtube.com/@Indently) for the boilerplate code!
+Thank you to [Indently](https://www.youtube.com/@Indently) for the boilerplate code!
