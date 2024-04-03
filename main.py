@@ -1,14 +1,18 @@
+import os
 from typing import Final
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from openai import OpenAI
+from dotenv import load_dotenv
 
-TOKEN: Final = ''
+load_dotenv()
+
+TOKEN: Final = os.getenv('TOKEN')
 BOT_USERNAME: Final = '@track_stats_bot'
-client = OpenAI()
-prompt_list: list[dict] = [{'role': 'system', 'content': 'You are a savage chik-fil-a worker'},
-                           {'role': 'user', 'content': 'Hello, can I order a Whopper?'},
-                           {'role': 'system', 'content': 'Don\'t play games with me, boy.'}]
+client = OpenAI(api_key=os.getenv('KEY'))
+prompt_list: list[dict] = [{'role': 'system', 'content': 'You are Avatar Aang, the last airbender. I am fire lord Ozai.'},
+                           {'role': 'user', 'content': "So you're the avatar."},
+                           {'role': 'system', 'content': 'Your reign of terror ends here, Ozai'}]
 
 # Commands
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -45,18 +49,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def get_api_response(prompt: list[dict]) -> str | None:
   text: str | None = None
   try:
-    response: dict = client.chat.completions.create(
+    response = client.chat.completions.create(
       model='gpt-3.5-turbo',
       messages=prompt,
-      temperature=0.9,
-      max_tokens=150,
-      top_p=1,
-      frequency_penalty=0,
-      presence_penalty=0.6,
-      stop=[' Human:', ' AI:']
     )
-    choices: dict = response.get('choices')[0]
-    text = choices.get('message')
+    choices: dict = response.choices[0]
+    text = choices.message
   except Exception as e:
     print('ERROR:', e)
   return text
@@ -72,8 +70,9 @@ def get_bot_response(message: str, pl: list[dict]) -> str:
   prompt: list[dict] = create_prompt(message, pl)
   bot_response: str = get_api_response(prompt)
   if bot_response:
-    update_list('system', bot_response, pl)
-    bot_response = bot_response[-1].get('content')
+    update_list('system', bot_response.content, pl)
+    print(pl)
+    bot_response = bot_response.content
   else:
     bot_response = 'Something went wrong...'
   return bot_response
